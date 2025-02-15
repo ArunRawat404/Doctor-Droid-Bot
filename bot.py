@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 import os
 import json
+import requests
 from dotenv import load_dotenv
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
@@ -11,10 +12,35 @@ from gemini_api import generate_response
 load_dotenv()
 
 app = FastAPI()
+
+SLACK_CLIENT_ID = os.getenv("SLACK_CLIENT_ID")
+SLACK_CLIENT_SECRET = os.getenv("SLACK_CLIENT_SECRET")
+
 slack_client = WebClient(token=os.getenv("SLACK_BOT_TOKEN"))
 
 # Track processed event IDs to prevent duplicate handling
 processed_events = set()
+
+@app.get("/slack/oauth")
+async def oauth_callback(request: Request):
+    """Handles Slack OAuth flow."""
+    code = request.query_params.get("code")
+
+    if not code:
+        return {"error": "Missing authorization code"}
+
+    # Exchange the code for an access token
+    response = requests.post("https://slack.com/api/oauth.v2.access", data={
+        "client_id": SLACK_CLIENT_ID,
+        "client_secret": SLACK_CLIENT_SECRET,
+        "code": code
+    }).json()
+
+    if response.get("ok"):
+        team_name = response["team"]["name"]
+        return {"message": f"Installation successful! Your bot is now active in {team_name}."}
+    else:
+        return {"error": response.get("error", "Unknown error")}
 
 @app.post("/slack/events")
 async def slack_events(request: Request):
