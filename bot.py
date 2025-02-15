@@ -21,39 +21,26 @@ slack_client = WebClient(token=os.getenv("SLACK_BOT_TOKEN"))
 # Track processed event IDs to prevent duplicate handling
 processed_events = set()
 
-import requests
-from fastapi import Request
-
-SLACK_CLIENT_ID = os.getenv("SLACK_CLIENT_ID")
-SLACK_CLIENT_SECRET = os.getenv("SLACK_CLIENT_SECRET")
-
 @app.get("/slack/oauth")
-async def slack_oauth(request: Request):
-    """Handles Slack OAuth redirection."""
+async def oauth_callback(request: Request):
+    """Handles Slack OAuth flow."""
     code = request.query_params.get("code")
-    
+
     if not code:
         return {"error": "Missing authorization code"}
-
-    print(f"Received code: {code}")  # Debug log
 
     # Exchange the code for an access token
     response = requests.post("https://slack.com/api/oauth.v2.access", data={
         "client_id": SLACK_CLIENT_ID,
         "client_secret": SLACK_CLIENT_SECRET,
-        "code": code,
-        "redirect_uri": "https://doctor-droid-bot.onrender.com/slack/oauth"
-    })
+        "code": code
+    }).json()
 
-    slack_response = response.json()
-
-    print("Slack OAuth Response:", slack_response)  # Debug log
-
-    if not slack_response.get("ok"):
-        return {"error": slack_response.get("error")}
-
-    return {"message": "Slack app installed successfully!", "data": slack_response}
-
+    if response.get("ok"):
+        team_name = response["team"]["name"]
+        return {"message": f"Installation successful! Your bot is now active in {team_name}."}
+    else:
+        return {"error": response.get("error", "Unknown error")}
 
 @app.post("/slack/events")
 async def slack_events(request: Request):
