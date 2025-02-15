@@ -1,5 +1,5 @@
 fastapi
-uvicorn
-slack-sdk
-openai
+slack_sdk
 python-dotenv
+google-generativeai
+uvicorn
