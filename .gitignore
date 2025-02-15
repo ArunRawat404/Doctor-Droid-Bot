@@ -1,0 +1,31 @@
+# Python related files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.cache
+*.log
+
+# Virtual environment
+venv/
+.env
+*.env
+
+# Jupyter Notebook checkpoints (if used)
+.ipynb_checkpoints/
+
+# VS Code settings (if using VS Code)
+.vscode/
+
+# macOS specific files
+.DS_Store
+
+# ngrok configuration and logs
+ngrok.log
+ngrok.yml
+
+# SQLite database files
+*.sqlite3
+*.db
+*.sqlite
+*.db-journal
