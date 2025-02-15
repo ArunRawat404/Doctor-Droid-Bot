@@ -35,7 +35,9 @@ async def slack_oauth(request: Request):
     if not code:
         return {"error": "Missing authorization code"}
 
-    # Exchange code for a token
+    print(f"Received code: {code}")  # Debug log
+
+    # Exchange the code for an access token
     response = requests.post("https://slack.com/api/oauth.v2.access", data={
         "client_id": SLACK_CLIENT_ID,
         "client_secret": SLACK_CLIENT_SECRET,
@@ -44,6 +46,8 @@ async def slack_oauth(request: Request):
     })
 
     slack_response = response.json()
+
+    print("Slack OAuth Response:", slack_response)  # Debug log
 
     if not slack_response.get("ok"):
         return {"error": slack_response.get("error")}
